@@ -8,10 +8,10 @@ public class Book {
     private String authorSurName;
 
 
-    public Book(int isbn, int bookID, String name, String authorName, String authorSurName) {
+    public Book(int isbn, int bookId, String title, String authorName, String authorSurName) {
         this.isbn = isbn;
-        this.bookID = bookID;
-        this.title = name;
+        this.bookID = bookId;
+        this.title = title;
         this.authorName = authorName;
         this.authorSurName = authorSurName;
     }

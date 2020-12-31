@@ -1,11 +1,9 @@
 package Library;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Properties;
 
 public class LibraryDataBase {
 
@@ -60,17 +58,26 @@ public class LibraryDataBase {
             }
         }
 
-
     }
-//  --- Új látogató felvétele, és a hozzáadas ellenõrzése ---------------------------------
+//    --- Add new book, and check it in the database -------------------------------------------------------------------
+
+
+
+//    ------------------------------------------------------------------------------------------------------------------
+
+//  --- Add new visitor, and check it in the database ------------------------------------------------------------------
 
     public void addNewVisitor(String firstName, String lastName) throws SQLException {
-        String countOfVisitors = "select count(visitorID) from visitor";
-        PreparedStatement
-        getAlLlVisitors();
-        int nextID = visitorsList.size() + 1;
+        int nextID = getNextVisitorID();
         addToDataBase(nextID, firstName, lastName);
         checkVisitorStatus(nextID, firstName, lastName);
+    }
+
+    private int getNextVisitorID() throws SQLException {
+        String countOfVisitors = "select count(visitorID) from visitor";
+        PreparedStatement prepStat = myConn.prepareStatement(countOfVisitors);
+        ResultSet resultSet = prepStat.executeQuery();
+        return resultSet.getInt("count(visitorID)") + 1;
     }
 
     private void addToDataBase(int nextID, String firstName, String lastName) throws SQLException {
@@ -100,33 +107,22 @@ public class LibraryDataBase {
         }
     }
 
-    private Visitor getSpecificVisitor(int id) throws SQLException {
-        String select = "select * from visitor where visitorID = ?";
-        PreparedStatement prepStat = myConn.prepareStatement(select);
-        prepStat.setInt(1, id);
-        ResultSet resultSet = prepStat.executeQuery();
-        String firstName = resultSet.getString("firstname");
-        String lastName = resultSet.getString("lastname");
-
-        return new Visitor(id, firstName,lastName);
-    }
-
-// ----------------------------------------------------
+// ---------------------------------------------------------------------------------------------------------------------
 
 
-public ArrayList<Visitor> getAlLlVisitors()throws SQLException{
-        ArrayList<Visitor> list=new ArrayList<>();
-        PreparedStatement prepStat=myConn.prepareStatement("select visitorID, name, surname from visitor");
-        ResultSet myResSet=prepStat.executeQuery();
+    public ArrayList<Visitor> getAlLlVisitors() throws SQLException {
+        ArrayList<Visitor> list = new ArrayList<>();
+        PreparedStatement prepStat = myConn.prepareStatement("select visitorID, name, surname from visitor");
+        ResultSet myResSet = prepStat.executeQuery();
 
-        while(myResSet.next()){
-        int id=myResSet.getInt("visitorID");
-        String name=myResSet.getString("name");
-        String surname=myResSet.getString("surname");
-        visitorsList.add(new Visitor(id,name,surname));
+        while (myResSet.next()) {
+            int id = myResSet.getInt("visitorID");
+            String name = myResSet.getString("name");
+            String surname = myResSet.getString("surname");
+            visitorsList.add(new Visitor(id, name, surname));
         }
         return list;
-        }
+    }
 
 //    public void authorsByID(){
 //        for(Author actual: authorsList){
@@ -141,33 +137,60 @@ public ArrayList<Visitor> getAlLlVisitors()throws SQLException{
 //        }
 //    }
 
-public ArrayList<Book> makeBooksListFromDB()throws Exception{
+    public ArrayList<Book> makeBooksListFromDB() throws Exception {
 
-        ArrayList<Book> list=new ArrayList<>();
-        PreparedStatement prepStatBooks=myConn.prepareStatement("select books.ISBN, bookself.bookID, books.title, authors.name, authors.surname from books join authors on books.authorID = authors.authorID join bookself on books.ISBN = bookself.ISBN");
-        ResultSet resultSet=prepStatBooks.executeQuery();
+        ArrayList<Book> list = new ArrayList<>();
+        PreparedStatement prepStatBooks = myConn.prepareStatement("select books.ISBN, bookself.bookID, books.title, authors.name, authors.surname from books join authors on books.authorID = authors.authorID join bookself on books.ISBN = bookself.ISBN");
+        ResultSet resultSet = prepStatBooks.executeQuery();
 
-        while(resultSet.next()){
-        int isbn=resultSet.getInt("ISBN");
-        int id=resultSet.getInt("bookID");
-        String title=resultSet.getString("title");
-        String name=resultSet.getString("name");
-        String surname=resultSet.getString("surname");
-        bookList.add(new Book(isbn,id,title,name,surname));
+        while (resultSet.next()) {
+            int isbn = resultSet.getInt("ISBN");
+            int id = resultSet.getInt("bookID");
+            String title = resultSet.getString("title");
+            String firstname = resultSet.getString("firstname");
+            String lastname = resultSet.getString("lastname");
+            bookList.add(new Book(isbn, id, title, firstname, lastname));
         }
 
         return list;
 
-        }
+    }
 
-private Connection getConnection()throws SQLException{
-        String url="jdbc:mysql://localhost:3306/library?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC";
-        Properties properties=new Properties();
-        properties.put("user","root");
-        properties.put("password","nemtudom11");
+//        ------ small tools ----------------------------------------------------------
 
-        return DriverManager.getConnection(url,properties);
+    private Visitor getSpecificVisitor(int id) throws SQLException {
+        String select = "select * from visitor where visitorID = ?";
+        PreparedStatement prepStat = myConn.prepareStatement(select);
+        prepStat.setInt(1, id);
+        ResultSet resultSet = prepStat.executeQuery();
+        String firstName = resultSet.getString("firstname");
+        String lastName = resultSet.getString("lastname");
 
-        }
+        return new Visitor(id, firstName, lastName);
+    }
 
-        }
+    private Book getSpecificBook(int id) throws SQLException {
+        String select = "select bookself.bookID, books.ISBN, books.title, authors.firstname, authors.lastname from bookself join books on bookself.ISBN = books.ISBN join authors on books.authorID = authors.authorID where bookID = ?";
+        PreparedStatement prepStat = myConn.prepareStatement(select);
+        prepStat.setInt(1, id);
+        ResultSet resultSet = prepStat.executeQuery();
+        int isbn = resultSet.getInt("ISBN");
+        int bookID = resultSet.getInt("bookID");
+        String title = resultSet.getString("title");
+        String firstName = resultSet.getString("firstname");
+        String lastName = resultSet.getString("lastname");
+
+        return new Book(isbn, bookID, title, firstName, lastName);
+    }
+
+    private Connection getConnection() throws SQLException {
+        String url = "jdbc:mysql://localhost:3306/library?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC";
+        Properties properties = new Properties();
+        properties.put("user", "root");
+        properties.put("password", "nemtudom11");
+
+        return DriverManager.getConnection(url, properties);
+
+    }
+
+}
