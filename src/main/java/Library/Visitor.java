@@ -27,10 +27,6 @@ public class Visitor {
         this.firstName = firstName;
     }
 
-    public int getIdVisitor() {
-        return idVisitor;
-    }
-
     public void setIdVisitor(int idVisitor) {
         this.idVisitor = idVisitor;
     }

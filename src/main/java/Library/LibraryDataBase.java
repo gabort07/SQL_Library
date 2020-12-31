@@ -17,8 +17,8 @@ public class LibraryDataBase {
     public LibraryDataBase() throws Exception {
         myConn = getConnection();
         System.out.println("Connection ready");
-        bookList = makeBooksListFromDB();
-        visitorsList = getAlLlVisitors();
+        bookList = new ArrayList<>();
+        visitorsList =new ArrayList<>();
         booksMap = new HashMap<>();
         authorsList = new ArrayList<>();
         authorsMap = new HashMap<>();
@@ -77,11 +77,15 @@ public class LibraryDataBase {
         String countOfVisitors = "select count(visitorID) from visitor";
         PreparedStatement prepStat = myConn.prepareStatement(countOfVisitors);
         ResultSet resultSet = prepStat.executeQuery();
-        return resultSet.getInt("count(visitorID)") + 1;
+        int nextId = 0;
+        while (resultSet.next()) {
+            nextId = resultSet.getInt("count(visitorID)");
+        }
+        return nextId+1;
     }
 
     private void addToDataBase(int nextID, String firstName, String lastName) throws SQLException {
-        String addVisitor = "INSERT INTO visitor (visitorID, name, surname) VALUES (?, ?, ?)";
+        String addVisitor = "INSERT INTO visitor (visitorID, firstname, lastname) VALUES (?, ?, ?)";
         PreparedStatement prepStat = myConn.prepareStatement(addVisitor);
         prepStat.setInt(1, nextID);
         prepStat.setString(2, firstName);
@@ -95,7 +99,7 @@ public class LibraryDataBase {
         prepStat.setInt(1, nextID);
         ResultSet resultSet = prepStat.executeQuery();
 
-        int id = resultSet.getInt("count(visitorID)");
+        int id = getSpecificVisitor(nextID).getVisitorID();
 
         if (id == nextID) {
             Visitor visitor = getSpecificVisitor(id);
@@ -112,13 +116,13 @@ public class LibraryDataBase {
 
     public ArrayList<Visitor> getAlLlVisitors() throws SQLException {
         ArrayList<Visitor> list = new ArrayList<>();
-        PreparedStatement prepStat = myConn.prepareStatement("select visitorID, name, surname from visitor");
+        PreparedStatement prepStat = myConn.prepareStatement("select * from visitor");
         ResultSet myResSet = prepStat.executeQuery();
 
         while (myResSet.next()) {
             int id = myResSet.getInt("visitorID");
-            String name = myResSet.getString("name");
-            String surname = myResSet.getString("surname");
+            String name = myResSet.getString("firstname");
+            String surname = myResSet.getString("lastname");
             visitorsList.add(new Visitor(id, name, surname));
         }
         return list;
@@ -140,7 +144,7 @@ public class LibraryDataBase {
     public ArrayList<Book> makeBooksListFromDB() throws Exception {
 
         ArrayList<Book> list = new ArrayList<>();
-        PreparedStatement prepStatBooks = myConn.prepareStatement("select books.ISBN, bookself.bookID, books.title, authors.name, authors.surname from books join authors on books.authorID = authors.authorID join bookself on books.ISBN = bookself.ISBN");
+        PreparedStatement prepStatBooks = myConn.prepareStatement("select books.ISBN, bookself.bookID, books.title, authors.firstname, authors.lastname from books join authors on books.authorID = authors.authorID join bookself on books.ISBN = bookself.ISBN");
         ResultSet resultSet = prepStatBooks.executeQuery();
 
         while (resultSet.next()) {
@@ -159,14 +163,17 @@ public class LibraryDataBase {
 //        ------ small tools ----------------------------------------------------------
 
     private Visitor getSpecificVisitor(int id) throws SQLException {
+        Visitor visitor = null;
         String select = "select * from visitor where visitorID = ?";
         PreparedStatement prepStat = myConn.prepareStatement(select);
         prepStat.setInt(1, id);
         ResultSet resultSet = prepStat.executeQuery();
-        String firstName = resultSet.getString("firstname");
-        String lastName = resultSet.getString("lastname");
-
-        return new Visitor(id, firstName, lastName);
+        while (resultSet.next()) {
+            String firstName = resultSet.getString("firstname");
+            String lastName = resultSet.getString("lastname");
+            visitor = new Visitor(id, firstName, lastName);
+        }
+        return visitor;
     }
 
     private Book getSpecificBook(int id) throws SQLException {
