@@ -51,10 +51,10 @@ public class Book {
     @Override
     public String toString() {
         return "Book: " +
-                "isbn: " + isbn +
+                " ISBN: " + isbn +
+                " ID: " +bookID+
                 ", title: '" + title + '\'' +
                 ", authorName: '" + authorName + '\'' +
-                ", authorSurName: '" + authorSurName + '\'' +
-                '}';
+                ", authorSurName: '" + authorSurName + '\'';
     }
 }

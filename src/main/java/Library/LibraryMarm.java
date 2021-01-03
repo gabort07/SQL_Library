@@ -24,18 +24,10 @@ public class LibraryMarm {
 
         switch (select){
             case 1:
-                System.out.println("Új látogató felvétele a nyílvántartásba.");
-                System.out.print("Vezetéknév: ");
-                String surname = sc.next();
-                System.out.print("Név: ");
-                String name =sc.next();
-                libraryDataBase.addNewVisitor(name, surname);
+                libraryDataBase.addNewVisitor();
                 break;
             case 2:
-                System.out.println("Új könyv felvétele az adatbázisba.");
-                System.out.print("ISBN: ");
-                int isbn = sc.nextInt();
-                libraryDataBase.addNewBook(isbn);
+                libraryDataBase.addBook();
                 break;
 //            case 3:
 //                libraryDataBase.removeBook();
