@@ -42,13 +42,6 @@ public class LibraryDataBase {
         }
     }
 
-//    public void showBooksByISBN() {
-//        booksByISBN();
-//        for (Integer actual : booksMap.keySet()) {
-//            System.out.println(booksMap.get(actual).get(0).toString() + " elérhetõ kötet: " + booksMap.get(actual).size());
-//        }
-//    }
-
 
 //    --- Add new book, and check it in the database -------------------------------------------------------------------
 
@@ -79,6 +72,9 @@ public class LibraryDataBase {
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
+        if (bookInDatabase(nextAuthorID)) {
+            System.out.println("Az új könyv sikeresen hozzáadva az adatbázishoz.");
+        }
     }
 
     public void addNewAuthor(String firstName, String lastName, int id) {
@@ -104,6 +100,20 @@ public class LibraryDataBase {
         System.out.println("Író keresztneve: ");
         String name = sc.next();
         return new Book(isbn, id, title, name, familyName);
+    }
+
+    private boolean bookInDatabase(int authorID) {
+        String select = "select count(*) from book where authorID = ?";
+        int count = 0;
+        try {
+            PreparedStatement prepStat = myConn.prepareStatement(select);
+            prepStat.setInt(1, authorID);
+            ResultSet resultSet = prepStat.executeQuery();
+            count = resultSet.getInt("count(*)");
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return count == 1;
     }
 
 
@@ -179,18 +189,6 @@ public class LibraryDataBase {
         return list;
     }
 
-//    public void authorsByID(){
-//        for(Author actual: authorsList){
-//            authorsMap.put()
-//        }
-//    }
-
-//    public void booksByISBN() {
-//        for (Book actual : bookList) {
-//            booksMap.putIfAbsent(actual.getISBN(), new ArrayList<>());
-//            booksMap.get(actual.getISBN()).add(actual);
-//        }
-//    }
 
     public ArrayList<Book> makeBooksListFromDB() throws Exception {
 
