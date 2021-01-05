@@ -48,6 +48,10 @@ public class Book {
         this.authorSurName = authorSurName;
     }
 
+    public int getBookID() {
+        return bookID;
+    }
+
     @Override
     public String toString() {
         return "Book: " +

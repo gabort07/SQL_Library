@@ -12,32 +12,39 @@ public class LibraryMarm {
     }
 
     public static void mainMenu(LibraryDataBase libraryDataBase) throws Exception {
-        Scanner sc = new Scanner(System.in);
+        boolean exit = false;
         System.out.println("Üdvozlöm a könytárban! Az alábbi opciókat választhatja: ");
-        System.out.println("Új látogató felvétele ---> 1");
-        System.out.println("Új könyv felvétele a könyvtárba --- >2");
-        System.out.println("Könyv törlése a könyvtárból --->3");
-        System.out.println("Csoportos listázás ---> 4");
-        System.out.println("Minden elérhetõ könyv listázása: ---> 5");
-        System.out.println("Könyv leadása ---> 6");
-        int select = sc.nextInt();
+        while (!exit) {
+            Scanner sc = new Scanner(System.in);
+            System.out.println();
+            System.out.println("Új látogató felvétele ---> 1");
+            System.out.println("Új könyv felvétele a könyvtárba --- >2");
+            System.out.println("Könyv törlése a könyvtárból --->3");
+            System.out.println("Könyvtár tagok listája ---> 4");
+            System.out.println("Minden elérhetõ könyv listázása: ---> 5");
+            System.out.println("Könyv leadása ---> 6");
+            System.out.println("Kilépsé ---> 9");
+            int select = sc.nextInt();
 
-        switch (select){
-            case 1:
-                libraryDataBase.addNewVisitor();
-                break;
-            case 2:
-                libraryDataBase.addBook();
-                break;
-//            case 3:
+            switch (select) {
+                case 1:
+                    libraryDataBase.addNewVisitor();
+                    break;
+                case 2:
+                    libraryDataBase.addBook();
+                    break;
+                case 3:
 //                libraryDataBase.removeBook();
-//                break;
-            case 4:
+                    break;
+                case 4:
 //                libraryDataBase.showBooksByISBN();
-                break;
-            case 5:
-                libraryDataBase.listAllBooks();
-
+                    break;
+                case 5:
+                    GUI.showBookList(libraryDataBase.makeBooksListFromDB());
+                    break;
+                case 9:
+                    exit = true;
+            }
         }
     }
 
@@ -53,8 +60,6 @@ public class LibraryMarm {
 //            for ()
 //            }
 //        }
-
-
 
 
 }
