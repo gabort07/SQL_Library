@@ -53,20 +53,20 @@ public class GUI {
         }
     }
 
-    public void printBookList(ArrayList<Book> list) {
+    private void printBookList(ArrayList<Book> list) {
         for (Book actual : list) {
             System.out.println(actual.toString());
         }
     }
 
-    public int askBookId() {
+    private int askBookId() {
         Scanner sc = new Scanner(System.in);
         System.out.println("Új könyv felvétele az adatbázisba.");
         System.out.print("Könyv ID: ");
         return sc.nextInt();
     }
 
-    public void addBook(int id) {
+    private void addBook(int id) {
         try {
             if (libraryDataBase.isBookInDatabase(id)) {
                 System.out.println("Azonos ID- az adatbázisban.");
