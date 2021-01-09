@@ -34,95 +34,32 @@ public class LibraryDataBase {
 
 //    --- Book operation with database -------------------------------------------------------------------
 
-    public void addBook() throws Exception {
-        Scanner sc = new Scanner(System.in);
-        System.out.println("Új könyv felvétele az adatbázisba.");
-        System.out.print("Könyv ID: ");
-        int id = sc.nextInt();
-        if (bookAvailable(id)) {
-            System.out.println("Azonos ID- az adatbázisban.");
-            sc.close();
-            System.out.println(getSpecificBook(id).toString());
-        } else {
-            addNewBook(askBookData(id));
-        }
+    public boolean isBookInDatabase(int bookID) {
+        String sqlSelect = "select ISBN from bookself where bookID = ?";
+        return retrieveBookISBNFromDB(sqlSelect, bookID) == extractISBNFromID(bookID);
     }
 
-    private void addNewBook(Book book) {
-        int nextAuthorID = countAuthors() + 1;
-        addNewAuthor(book.getAuthorName(), book.getAuthorSurName(), nextAuthorID);
-        String insertBook = "insert into (ISBN, title, authorID) values (?,?,?)";
-        try {
-            PreparedStatement prepStat = myConn.prepareStatement(insertBook);
-            prepStat.setInt(1, book.getISBN());
-            prepStat.setString(2, book.getTitle());
-            prepStat.setInt(3, nextAuthorID);
-            prepStat.executeUpdate();
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-        }
-        if (bookInDatabase(book.getBookID())) {
-            System.out.println("Az új könyv sikeresen hozzáadva az adatbázishoz.");
-        }
-    }
-
-    public void addNewAuthor(String firstName, String lastName, int id) {
-        try {
-            String insertAuthor = "insert into authors (firstname, lastname, authorID) values (?,?,?)";
-            PreparedStatement prepStat = myConn.prepareStatement(insertAuthor);
-            prepStat.setString(1, firstName);
-            prepStat.setString(2, lastName);
-            prepStat.setInt(3, id);
-            prepStat.executeUpdate();
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-        }
-    }
-
-    private Book askBookData(int id) {
-        int isbn = Integer.parseInt(String.valueOf(id).substring(0, 4));
-        Scanner sc = new Scanner(System.in);
-        System.out.println("A könyv címe: ");
-        String title = sc.next();
-        System.out.println("Író vezetékneve: ");
-        String familyName = sc.next();
-        System.out.println("Író keresztneve: ");
-        String name = sc.next();
-        return new Book(isbn, id, title, name, familyName);
-    }
-
-    private boolean bookInDatabase(int bookID) {
-        String select = "select ISBN from bookself where bookID = ?";
-        int isbn = Integer.parseInt(String.valueOf(bookID).substring(0, 4));
+    private int retrieveBookISBNFromDB(String sqlSelect, int bookID) {
         int i = 0;
         try {
-            PreparedStatement prepStat = myConn.prepareStatement(select);
+            PreparedStatement prepStat = myConn.prepareStatement(sqlSelect);
             prepStat.setInt(1, bookID);
             ResultSet resultSet = prepStat.executeQuery();
             i = resultSet.getInt("ISBN");
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
-        return i == isbn;
+        return i;
     }
 
-    public boolean bookAvailable(int id) {
-        String select = "select count(*) from bookself where bookID = ?";
-        int count = 0;
-        try {
-            PreparedStatement prepStat = myConn.prepareStatement(select);
-            prepStat.setInt(1, id);
-            ResultSet resultSet = prepStat.executeQuery();
-            while (resultSet.next()) {
-                count = resultSet.getInt("count(*)");
-            }
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-        }
-        return count == 1;
+    private int extractISBNFromID(int bookID) {
+        return Integer.parseInt(String.valueOf(bookID).substring(0, 4));
     }
 
-    private Book getSpecificBook(int id) throws SQLException {
+
+
+
+    public Book getSpecificBook(int id) throws SQLException {
         Book book = null;
         String select = "select bookself.bookID, books.ISBN, books.title, authors.firstname, authors.lastname from bookself join books on bookself.ISBN = books.ISBN join authors on books.authorID = authors.authorID where bookID = ?";
         PreparedStatement prepStat = myConn.prepareStatement(select);
@@ -149,6 +86,60 @@ public class LibraryDataBase {
         return book;
     }
 
+
+    private PreparedStatement prepareBookDataStatement(Book book, int authorID, String stringStatement) {
+        try {
+            PreparedStatement prepStat = myConn.prepareStatement(stringStatement);
+            prepStat.setInt(1, book.getISBN());
+            prepStat.setString(2, book.getTitle());
+            prepStat.setInt(3, authorID);
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return p
+    }
+
+    public void addNewBook(Book book) {
+        int nextAuthorID = countAuthors() + 1;
+        addNewAuthor(book.getAuthorName(), book.getAuthorSurName(), nextAuthorID);
+        String insertBook = "insert into (ISBN, title, authorID) values (?,?,?)";
+        try {
+
+            prepStat.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        if (isBookInDatabase(book.getBookID())) {
+            System.out.println("Az új könyv sikeresen hozzáadva az adatbázishoz.");
+        }
+    }
+
+    public void addNewAuthor(String firstName, String lastName, int id) {
+        try {
+            String insertAuthor = "insert into authors (firstname, lastname, authorID) values (?,?,?)";
+            PreparedStatement prepStat = myConn.prepareStatement(insertAuthor);
+            prepStat.setString(1, firstName);
+            prepStat.setString(2, lastName);
+            prepStat.setInt(3, id);
+            prepStat.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    public Book askBookData(int id) {
+        int isbn = Integer.parseInt(String.valueOf(id).substring(0, 4));
+        Scanner sc = new Scanner(System.in);
+        System.out.println("A könyv címe: ");
+        String title = sc.next();
+        System.out.println("Író vezetékneve: ");
+        String familyName = sc.next();
+        System.out.println("Író keresztneve: ");
+        String name = sc.next();
+        return new Book(isbn, id, title, name, familyName);
+    }
+
+
     private int countAuthors() {
         int count = 0;
         try {
@@ -160,6 +151,52 @@ public class LibraryDataBase {
             System.out.println(e.getMessage());
         }
         return count;
+    }
+
+
+    private PreparedStatement prepareBooksDataStatement(String sqlSelect) {
+        PreparedStatement prepStat = null;
+        try {
+            prepStat = myConn.prepareStatement(sqlSelect);
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return prepStat;
+    }
+
+    private ResultSet makeResultSetOfBooksInDB(PreparedStatement prepStat) {
+        ResultSet resultSet = null;
+        try {
+            resultSet = prepStat.executeQuery();
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return resultSet;
+    }
+
+    private ArrayList<Book> extractBooksFromResultSetToList(ResultSet resultSet) {
+        ArrayList<Book> list = new ArrayList<>();
+        try {
+            while (resultSet.next()) {
+                int isbn = resultSet.getInt("ISBN");
+                int id = resultSet.getInt("bookID");
+                String title = resultSet.getString("title");
+                String firstname = resultSet.getString("firstname");
+                String lastname = resultSet.getString("lastname");
+                list.add(new Book(isbn, id, title, firstname, lastname));
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return list;
+    }
+
+    private String selectAllBookDataFromSQL() {
+        return "select books.ISBN, bookself.bookID, books.title, authors.firstname, authors.lastname from books join bookself on books.ISBN = bookself.ISBN join authors on books.authorID = authors.authorID";
+    }
+
+    public ArrayList<Book> makeBooksListFromDB() {
+        return extractBooksFromResultSetToList(makeResultSetOfBooksInDB(prepareBooksDataStatement(selectAllBookDataFromSQL())));
     }
 
 
@@ -247,25 +284,8 @@ public class LibraryDataBase {
     }
 
 
-// ---------------------------------------------------------------------------------------------------------------------
+    // ---------------------------------------------------------------------------------------------------------------------
 
-
-    public ArrayList<Book> makeBooksListFromDB() throws Exception {
-        ArrayList<Book> list = new ArrayList<>();
-        PreparedStatement prepStatBooks = myConn.prepareStatement("select books.ISBN, bookself.bookID, books.title, authors.firstname, authors.lastname from books join bookself on books.ISBN = bookself.ISBN join authors on books.authorID = authors.authorID");
-        ResultSet resultSet = prepStatBooks.executeQuery();
-
-        while (resultSet.next()) {
-            int isbn = resultSet.getInt("ISBN");
-            int id = resultSet.getInt("bookID");
-            String title = resultSet.getString("title");
-            String firstname = resultSet.getString("firstname");
-            String lastname = resultSet.getString("lastname");
-            list.add(new Book(isbn, id, title, firstname, lastname));
-        }
-        return list;
-
-    }
 
 //        ------ small tools ----------------------------------------------------------
 
