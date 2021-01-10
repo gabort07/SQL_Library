@@ -36,7 +36,7 @@ public class GUI {
                     }
                     break;
                 case 2:
-                    addBook(askBookId());
+                    addBook();
                     break;
                 case 3:
 //                libraryDataBase.removeBook();
@@ -61,18 +61,20 @@ public class GUI {
 
     private int askBookId() {
         Scanner sc = new Scanner(System.in);
-        System.out.println("Új könyv felvétele az adatbázisba.");
+
         System.out.print("Könyv ID: ");
         return sc.nextInt();
     }
 
-    private void addBook(int id) {
+    private void addBook() {
+        System.out.println("Új könyv felvétele az adatbázisba.");
+        int id = askBookId();
         try {
             if (libraryOperator.isBookInDatabase(id)) {
                 System.out.println("Azonos ID- az adatbázisban.");
-                System.out.println(libraryOperator.getSpecificBook(id).toString());
+                System.out.println(libraryOperator.makeBookFromSpecificID(id).toString());
             } else {
-                libraryOperator.addNewBook(libraryOperator.makeBookFromString(id, askBookData()));
+                libraryOperator.addNewBook(libraryOperator.makeBookFromInputArgument(id, askBookData()));
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());

@@ -31,32 +31,52 @@ public class LibraryOperator {
         return booksMap;
     }
 
+    //        ------ small tools ----------------------------------------------------------
+    private void executeDBUpdate(PreparedStatement prepStat) {
+        try {
+            prepStat.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    private Connection getConnection() throws SQLException {
+        String url = "jdbc:mysql://localhost:3306/library?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC";
+        Properties properties = new Properties();
+        properties.put("user", "root");
+        properties.put("password", "nemtudom11");
+        System.out.println("Connection ready");
+        return DriverManager.getConnection(url, properties);
+
+    }
 
 //    --- Book operation with database -------------------------------------------------------------------
 
     public boolean isBookInDatabase(int bookID) {
-        String sqlSelect = "select ISBN from bookself where bookID = ?";
-        return retrieveBookISBNFromDB(sqlSelect, bookID) == extractISBNFromID(bookID);
+        return retrieveISBNOfBookFromDB(bookID) == extractISBNFromID(bookID);
     }
 
-    private int retrieveBookISBNFromDB(String sqlSelect, int bookID) {
+    public int retrieveISBNOfBookFromDB(int bookID) {
         int i = 0;
+        String sqlSelect = "select ISBN from bookself where bookID = ?";
         try {
             PreparedStatement prepStat = myConn.prepareStatement(sqlSelect);
             prepStat.setInt(1, bookID);
             ResultSet resultSet = prepStat.executeQuery();
-            i = resultSet.getInt("ISBN");
+            while (resultSet.next()) {
+                i = resultSet.getInt("ISBN");
+            }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
         return i;
     }
 
-    private int extractISBNFromID(int bookID) {
+    public int extractISBNFromID(int bookID) {
         return Integer.parseInt(String.valueOf(bookID).substring(0, 4));
     }
 
-    public Book getSpecificBook(int id) throws SQLException {
+    public Book makeBookFromSpecificID(int id) throws SQLException {
         return makeBookFromResultSet(makeResultSetFromPrepStatement(prepareStatementWithBookID(id)));
     }
 
@@ -117,14 +137,6 @@ public class LibraryOperator {
         return prepStat;
     }
 
-    private void executeDBUpdate(PreparedStatement prepStat) {
-        try {
-            prepStat.executeUpdate();
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-        }
-    }
-
     public void addNewBook(Book book) {
         int nextAuthorID = countAuthorsInDB() + 1;
         addNewAuthor(book.getAuthorName(), book.getAuthorSurName(), nextAuthorID);
@@ -135,7 +147,7 @@ public class LibraryOperator {
         }
     }
 
-    public Book makeBookFromString(int id, String[] data) {
+    public Book makeBookFromInputArgument(int id, String[] data) {
         int isbn =Integer.parseInt(String.valueOf(id).substring(0, 4));
         return new Book(isbn, id, data[0], data[1], data[2]);
     }
@@ -185,7 +197,7 @@ public class LibraryOperator {
         return extractBooksFromResultSetToList(makeResultSetOfBooksInDB(prepareRegularBookStatement(selectAllBookDataFromSQL())));
     }
 
-//    -------------------------------------------------------------------------------
+//    --- Author operations ----------------------------------------------------------------------------
 
     public void addNewAuthor(String firstName, String lastName, int id) {
         try {
@@ -214,8 +226,8 @@ public class LibraryOperator {
     }
 
 
-
 //  --- Visitor operations with database  ------------------------------------------------------------------
+
 
     public void addNewVisitor() throws SQLException {
         Scanner sc = new Scanner(System.in);
@@ -302,16 +314,5 @@ public class LibraryOperator {
     // ---------------------------------------------------------------------------------------------------------------------
 
 
-//        ------ small tools ----------------------------------------------------------
-
-    private Connection getConnection() throws SQLException {
-        String url = "jdbc:mysql://localhost:3306/library?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC";
-        Properties properties = new Properties();
-        properties.put("user", "root");
-        properties.put("password", "nemtudom11");
-        System.out.println("Connection ready");
-        return DriverManager.getConnection(url, properties);
-
-    }
 
 }

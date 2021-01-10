@@ -1,5 +1,10 @@
 package Library;
 import org.junit.Before;
+import org.junit.Test;
+
+import java.sql.SQLException;
+
+import static org.junit.Assert.assertEquals;
 
 public class LibraryOperatorTest {
 
@@ -10,19 +15,15 @@ public class LibraryOperatorTest {
         libraryOperator = new LibraryOperator();
     }
 
-//    @Test
-//    public void emptyVisitorList() throws SQLException {
-//        libraryDataBase.getAlLlVisitors();
-//        assertEquals(1,libraryDataBase.getVisitorsList().size());
-//    }
 
+    @Test
+    public void shouldReturnTheFirstFourDigit(){
+        assertEquals(1002,libraryOperator.extractISBNFromID(10023456));
+    }
 
+    @Test
+    public void shouldReturnOneBook() throws SQLException {
+        assertEquals(1001,libraryOperator.retrieveISBNOfBookFromDB(100101));
+    }
 
-//    @Test
-//    public void oneElementInVisitorList() throws SQLException {
-//        libraryDataBase.addNewVisitor("Laci", "Joe");
-//        assertEquals(1,libraryDataBase.getVisitorsList().get(0).getVisitorID());
-//        assertEquals(2, libraryDataBase.getVisitorsList().size());
-//        assertEquals(libraryDataBase.getVisitorsList().size()+1, libraryDataBase.getVisitorsList().get(1).getVisitorID());
-//    }
 }
