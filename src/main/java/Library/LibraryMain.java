@@ -1,6 +1,6 @@
 package Library;
 
-public class LibraryMarm {
+public class LibraryMain {
     public static void main(String[] args) throws Exception {
 
         LibraryOperator libraryOperator = new LibraryOperator();
