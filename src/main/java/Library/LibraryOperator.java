@@ -8,28 +8,19 @@ import java.util.Scanner;
 
 public class LibraryOperator {
 
-    private Connection myConn;
+    private final Connection myConn;
     private ArrayList<Visitor> visitorsList;
-    private HashMap<Integer, ArrayList<Book>> booksMap;
-    private ArrayList<Author> authorsList;
-    private HashMap<Integer, Author> authorsMap;
 
     public LibraryOperator() throws Exception {
         myConn = getConnection();
         visitorsList = new ArrayList<>();
-        booksMap = new HashMap<>();
-        authorsList = new ArrayList<>();
-        authorsMap = new HashMap<>();
+        ArrayList<Author> authorsList = new ArrayList<>();
     }
 
     public ArrayList<Visitor> getVisitorsList() {
         return visitorsList;
     }
 
-
-    public HashMap<Integer, ArrayList<Book>> getBooksMap() {
-        return booksMap;
-    }
 
     //        ------ small tools ----------------------------------------------------------
     private void executeDBUpdate(PreparedStatement prepStat) {
@@ -92,18 +83,13 @@ public class LibraryOperator {
 
     private Book makeBookFromResultSet(ResultSet resultSet) {
         Book book = null;
-        int isbn = 0;
-        int bookID = 0;
-        String title = null;
-        String firstName = null;
-        String lastName = null;
         try {
             while (resultSet.next()) {
-                isbn = resultSet.getInt("ISBN");
-                bookID = resultSet.getInt("bookID");
-                title = resultSet.getString("title");
-                firstName = resultSet.getString("firstname");
-                lastName = resultSet.getString("lastname");
+                int isbn = resultSet.getInt("ISBN");
+                int bookID = resultSet.getInt("bookID");
+                String title = resultSet.getString("title");
+                String firstName = resultSet.getString("firstname");
+                String lastName = resultSet.getString("lastname");
                 book = new Book(isbn, bookID, title, firstName, lastName);
             }
         } catch (SQLException e) {

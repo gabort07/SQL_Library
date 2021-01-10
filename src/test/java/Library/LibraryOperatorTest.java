@@ -2,8 +2,6 @@ package Library;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.sql.SQLException;
-
 import static org.junit.Assert.assertEquals;
 
 public class LibraryOperatorTest {
@@ -22,7 +20,7 @@ public class LibraryOperatorTest {
     }
 
     @Test
-    public void shouldReturnOneBook() throws SQLException {
+    public void shouldReturnOneBook() {
         assertEquals(1001,libraryOperator.retrieveISBNOfBookFromDB(100101));
     }
 
