@@ -59,13 +59,6 @@ public class GUI {
         }
     }
 
-    private int askBookId() {
-        Scanner sc = new Scanner(System.in);
-
-        System.out.print("Könyv ID: ");
-        return sc.nextInt();
-    }
-
     private void addBook() {
         System.out.println("Új könyv felvétele az adatbázisba.");
         int id = askBookId();
@@ -81,6 +74,13 @@ public class GUI {
         }
     }
 
+    private int askBookId() {
+        Scanner sc = new Scanner(System.in);
+
+        System.out.print("Könyv ID: ");
+        return sc.nextInt();
+    }
+
     private String[] askBookData() {
         Scanner sc = new Scanner(System.in);
         System.out.println("A könyv címe: ");
@@ -93,6 +93,15 @@ public class GUI {
         return new String[]{title, name, familyName};
     }
 
+    private void addVisitor(){
+        Scanner sc = new Scanner(System.in);
+        System.out.println("Új látogató felvétele a nyílvántartásba.");
+        System.out.print("Vezetéknév: ");
+        String lastName = sc.next();
+        System.out.print("Név: ");
+        String firstName = sc.next();
+        libraryOperator.addNewVisitor(firstName,lastName);
+    }
 
 }
 

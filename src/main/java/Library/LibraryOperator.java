@@ -2,9 +2,7 @@ package Library;
 
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Properties;
-import java.util.Scanner;
 
 public class LibraryOperator {
 
@@ -215,37 +213,38 @@ public class LibraryOperator {
 //  --- Visitor operations with database  ------------------------------------------------------------------
 
 
-    public void addNewVisitor() throws SQLException {
-        Scanner sc = new Scanner(System.in);
-        System.out.println("Új látogató felvétele a nyílvántartásba.");
-        System.out.print("Vezetéknév: ");
-        String lastName = sc.next();
-        System.out.print("Név: ");
-        String firstName = sc.next();
-        int nextID = getNextVisitorID();
-        sc.close();
-        addToDataBase(nextID, firstName, lastName);
+    public void addNewVisitor(String firstName, String lastName){
+        int nextID = generateNextVisitorID();
+        addVisitorToDataBase(nextID, firstName, lastName);
         checkVisitorStatus(nextID, firstName, lastName);
     }
 
-    private int getNextVisitorID() throws SQLException {
-        String countOfVisitors = "select count(visitorID) from visitor";
-        PreparedStatement prepStat = myConn.prepareStatement(countOfVisitors);
-        ResultSet resultSet = prepStat.executeQuery();
+    private int generateNextVisitorID() {
         int nextId = 0;
-        while (resultSet.next()) {
-            nextId = resultSet.getInt("count(visitorID)");
+        String countOfVisitors = "select count(visitorID) from visitor";
+        try {
+            PreparedStatement prepStat = myConn.prepareStatement(countOfVisitors);
+            ResultSet resultSet = prepStat.executeQuery();
+            while (resultSet.next()) {
+                nextId = resultSet.getInt("count(visitorID)");
+            }
+        }catch (SQLException e){
+            System.out.println(e.getMessage());
         }
         return nextId + 1;
     }
 
-    private void addToDataBase(int nextID, String firstName, String lastName) throws SQLException {
+    private void addVisitorToDataBase(int nextID, String firstName, String lastName){
         String addVisitor = "INSERT INTO visitor (visitorID, firstname, lastname) VALUES (?, ?, ?)";
-        PreparedStatement prepStat = myConn.prepareStatement(addVisitor);
-        prepStat.setInt(1, nextID);
-        prepStat.setString(2, firstName);
-        prepStat.setString(3, lastName);
-        prepStat.executeUpdate();
+        try {
+            PreparedStatement prepStat = myConn.prepareStatement(addVisitor);
+            prepStat.setInt(1, nextID);
+            prepStat.setString(2, firstName);
+            prepStat.setString(3, lastName);
+            prepStat.executeUpdate();
+        }catch (SQLException e){
+            System.out.println(e.getMessage());
+        }
     }
 
     private void checkVisitorStatus(int nextID, String firstName, String lastName) throws SQLException {
