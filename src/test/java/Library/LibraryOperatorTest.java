@@ -1,19 +1,13 @@
 package Library;
 import org.junit.Before;
-import org.junit.Test;
 
+public class LibraryOperatorTest {
 
-import java.sql.SQLException;
-
-import static org.junit.Assert.*;
-
-public class LibraryDataBaseTest {
-
-    LibraryDataBase libraryDataBase;
+    LibraryOperator libraryOperator;
 
     @Before
     public void setUp() throws Exception {
-        libraryDataBase = new LibraryDataBase();
+        libraryOperator = new LibraryOperator();
     }
 
 //    @Test

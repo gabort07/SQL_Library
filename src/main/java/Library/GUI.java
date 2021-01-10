@@ -6,10 +6,10 @@ import java.util.Scanner;
 
 public class GUI {
 
-    LibraryDataBase libraryDataBase;
+    LibraryOperator libraryOperator;
 
-    public GUI(LibraryDataBase libraryDataBase) {
-        this.libraryDataBase = libraryDataBase;
+    public GUI(LibraryOperator libraryOperator) {
+        this.libraryOperator = libraryOperator;
     }
 
     public void mainMenu() {
@@ -30,7 +30,7 @@ public class GUI {
             switch (select) {
                 case 1:
                     try {
-                        libraryDataBase.addNewVisitor();
+                        libraryOperator.addNewVisitor();
                     } catch (SQLException e) {
                         System.out.println(e.getMessage());
                     }
@@ -45,7 +45,7 @@ public class GUI {
 //                libraryDataBase.showBooksByISBN();
                     break;
                 case 5:
-                    printBookList(libraryDataBase.makeBooksListFromDB());
+                    printBookList(libraryOperator.makeBooksListFromDB());
                     break;
                 case 9:
                     exit = true;
@@ -68,15 +68,27 @@ public class GUI {
 
     private void addBook(int id) {
         try {
-            if (libraryDataBase.isBookInDatabase(id)) {
+            if (libraryOperator.isBookInDatabase(id)) {
                 System.out.println("Azonos ID- az adatbázisban.");
-                System.out.println(libraryDataBase.getSpecificBook(id).toString());
+                System.out.println(libraryOperator.getSpecificBook(id).toString());
             } else {
-                libraryDataBase.addNewBook(libraryDataBase.askBookData(id));
+                libraryOperator.addNewBook(libraryOperator.makeBookFromString(id, askBookData()));
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
+    }
+
+    private String[] askBookData() {
+        Scanner sc = new Scanner(System.in);
+        System.out.println("A könyv címe: ");
+        String title = sc.next();
+        System.out.println("Író vezetékneve: ");
+        String familyName = sc.next();
+        System.out.println("Író keresztneve: ");
+        String name = sc.next();
+
+        return new String[]{title, name, familyName};
     }
 
 

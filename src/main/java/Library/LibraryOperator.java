@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Properties;
 import java.util.Scanner;
 
-public class LibraryDataBase {
+public class LibraryOperator {
 
     private Connection myConn;
     private ArrayList<Visitor> visitorsList;
@@ -14,7 +14,7 @@ public class LibraryDataBase {
     private ArrayList<Author> authorsList;
     private HashMap<Integer, Author> authorsMap;
 
-    public LibraryDataBase() throws Exception {
+    public LibraryOperator() throws Exception {
         myConn = getConnection();
         visitorsList = new ArrayList<>();
         booksMap = new HashMap<>();
@@ -56,15 +56,22 @@ public class LibraryDataBase {
         return Integer.parseInt(String.valueOf(bookID).substring(0, 4));
     }
 
-
-
-
     public Book getSpecificBook(int id) throws SQLException {
+        return makeBookFromResultSet(makeResultSetFromPrepStatement(prepareStatementWithBookID(id)));
+    }
+
+    private ResultSet makeResultSetFromPrepStatement(PreparedStatement prepStat) {
+        ResultSet resultSet = null;
+        try {
+            resultSet = prepStat.executeQuery();
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return resultSet;
+    }
+
+    private Book makeBookFromResultSet(ResultSet resultSet) {
         Book book = null;
-        String select = "select bookself.bookID, books.ISBN, books.title, authors.firstname, authors.lastname from bookself join books on bookself.ISBN = books.ISBN join authors on books.authorID = authors.authorID where bookID = ?";
-        PreparedStatement prepStat = myConn.prepareStatement(select);
-        prepStat.setInt(1, id);
-        ResultSet resultSet = prepStat.executeQuery();
         int isbn = 0;
         int bookID = 0;
         String title = null;
@@ -82,79 +89,58 @@ public class LibraryDataBase {
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
-
         return book;
     }
 
-
-    private PreparedStatement prepareBookDataStatement(Book book, int authorID, String stringStatement) {
+    private PreparedStatement prepareStatementWithBookID(int bookID) {
+        PreparedStatement prepStat = null;
+        String sqlSelect = selectAllBookDataFromSQL() + " where bookID = ?";
         try {
-            PreparedStatement prepStat = myConn.prepareStatement(stringStatement);
+            prepStat = myConn.prepareStatement(sqlSelect);
+            prepStat.setInt(1, bookID);
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return prepStat;
+    }
+
+    private PreparedStatement prepareStatementWithAuthorID(Book book, int authorID, String sqlSelect) {
+        PreparedStatement prepStat = null;
+        try {
+            prepStat = myConn.prepareStatement(sqlSelect);
             prepStat.setInt(1, book.getISBN());
             prepStat.setString(2, book.getTitle());
             prepStat.setInt(3, authorID);
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
-        return p
+        return prepStat;
     }
 
-    public void addNewBook(Book book) {
-        int nextAuthorID = countAuthors() + 1;
-        addNewAuthor(book.getAuthorName(), book.getAuthorSurName(), nextAuthorID);
-        String insertBook = "insert into (ISBN, title, authorID) values (?,?,?)";
+    private void executeDBUpdate(PreparedStatement prepStat) {
         try {
-
             prepStat.executeUpdate();
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
+    }
+
+    public void addNewBook(Book book) {
+        int nextAuthorID = countAuthorsInDB() + 1;
+        addNewAuthor(book.getAuthorName(), book.getAuthorSurName(), nextAuthorID);
+        String SQLSelect = "insert into (ISBN, title, authorID) values (?,?,?)";
+        executeDBUpdate(prepareStatementWithAuthorID(book, nextAuthorID, SQLSelect));
         if (isBookInDatabase(book.getBookID())) {
             System.out.println("Az új könyv sikeresen hozzáadva az adatbázishoz.");
         }
     }
 
-    public void addNewAuthor(String firstName, String lastName, int id) {
-        try {
-            String insertAuthor = "insert into authors (firstname, lastname, authorID) values (?,?,?)";
-            PreparedStatement prepStat = myConn.prepareStatement(insertAuthor);
-            prepStat.setString(1, firstName);
-            prepStat.setString(2, lastName);
-            prepStat.setInt(3, id);
-            prepStat.executeUpdate();
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-        }
+    public Book makeBookFromString(int id, String[] data) {
+        int isbn =Integer.parseInt(String.valueOf(id).substring(0, 4));
+        return new Book(isbn, id, data[0], data[1], data[2]);
     }
 
-    public Book askBookData(int id) {
-        int isbn = Integer.parseInt(String.valueOf(id).substring(0, 4));
-        Scanner sc = new Scanner(System.in);
-        System.out.println("A könyv címe: ");
-        String title = sc.next();
-        System.out.println("Író vezetékneve: ");
-        String familyName = sc.next();
-        System.out.println("Író keresztneve: ");
-        String name = sc.next();
-        return new Book(isbn, id, title, name, familyName);
-    }
-
-
-    private int countAuthors() {
-        int count = 0;
-        try {
-            String select = "select count(*) from authors";
-            PreparedStatement prepStat = myConn.prepareStatement(select);
-            ResultSet resultSet = prepStat.executeQuery();
-            count = resultSet.getInt("count(*)");
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-        }
-        return count;
-    }
-
-
-    private PreparedStatement prepareBooksDataStatement(String sqlSelect) {
+    private PreparedStatement prepareRegularBookStatement(String sqlSelect) {
         PreparedStatement prepStat = null;
         try {
             prepStat = myConn.prepareStatement(sqlSelect);
@@ -196,8 +182,37 @@ public class LibraryDataBase {
     }
 
     public ArrayList<Book> makeBooksListFromDB() {
-        return extractBooksFromResultSetToList(makeResultSetOfBooksInDB(prepareBooksDataStatement(selectAllBookDataFromSQL())));
+        return extractBooksFromResultSetToList(makeResultSetOfBooksInDB(prepareRegularBookStatement(selectAllBookDataFromSQL())));
     }
+
+//    -------------------------------------------------------------------------------
+
+    public void addNewAuthor(String firstName, String lastName, int id) {
+        try {
+            String insertAuthor = "insert into authors (firstname, lastname, authorID) values (?,?,?)";
+            PreparedStatement prepStat = myConn.prepareStatement(insertAuthor);
+            prepStat.setString(1, firstName);
+            prepStat.setString(2, lastName);
+            prepStat.setInt(3, id);
+            prepStat.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    private int countAuthorsInDB() {
+        int count = 0;
+        try {
+            String select = "select count(*) from authors";
+            PreparedStatement prepStat = myConn.prepareStatement(select);
+            ResultSet resultSet = prepStat.executeQuery();
+            count = resultSet.getInt("count(*)");
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return count;
+    }
+
 
 
 //  --- Visitor operations with database  ------------------------------------------------------------------
