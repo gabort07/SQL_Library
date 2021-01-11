@@ -29,11 +29,7 @@ public class GUI {
 
             switch (select) {
                 case 1:
-                    try {
-                        libraryOperator.addNewVisitor();
-                    } catch (SQLException e) {
-                        System.out.println(e.getMessage());
-                    }
+                    addVisitor();
                     break;
                 case 2:
                     addBook();
